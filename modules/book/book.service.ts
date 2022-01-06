@@ -1,14 +1,12 @@
-import { Book } from './entity/book.entity';
-import { BooksRepoImpl } from './infra/books.repo';
+import { Book } from './entities/book.entity';
+import { BooksRepo } from './infra/books.repo';
 
 /**
- * I stick to idea that Application Service must thin. Its responsibily must be binding all needed business-logic together,
+ * I stick to idea that Application Service must thin. Its responsibility is binding all needed business-logic together,
  * but at the same time all domain logic must be carried out in the Domain Entities and sometimes in the Domain Services
  */
 export class BooksService {
-    private booksRepo: BooksRepoImpl;
-
-    constructor(booksRepo) {
+    constructor(private booksRepo: BooksRepo) {
         this.booksRepo = booksRepo;
     }
 
@@ -19,7 +17,7 @@ export class BooksService {
 
         await this.booksRepo.createOne(bookOrErr._unsafeUnwrap());
 
-        return bookOrErr.map(book => ({
+        return await bookOrErr.map(book => ({
             id: book.rawProps().id,
             title: book.rawProps().title,
             authors: book.rawProps().authors,

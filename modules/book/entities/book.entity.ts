@@ -17,6 +17,7 @@ function generateId() {
  **/
 export class Book {
     private props: BookProps;
+    public static readonly TITLE_MIN_LENGTH = 3;
 
     private constructor(props: BookProps) {
         this.props = props;
@@ -24,14 +25,11 @@ export class Book {
 
     static create({ authors, name }) {
         const validAuthors = Book.validateAuthors(authors);
-        const validTitle = Book.validateTitle(name);
-        
-        // TODO: I dont know why, but I loose types when use combine 
-        // const combineOrErr = combine([err(validTitleOrErr), err(validAuthorsOrErr)])
-
         if (validAuthors.isErr()) return validAuthors;
-        if (validTitle.isErr()) return validTitle;
 
+        const validTitle = Book.validateTitle(name);
+        if (validTitle.isErr()) return validTitle;
+        
         return ok(new Book({
             id: generateId(),
             authors,
@@ -41,7 +39,11 @@ export class Book {
 
     static validateTitle(title: string) {
         if (typeof title !== 'string') {
-            return BookError.InvalidTitle.create('"title" must be a string');
+            return new BookError.InvalidTitle('"title" must be a string');
+        }
+
+        if (title.length < Book.TITLE_MIN_LENGTH) {
+            return new BookError.InvalidTitle(`"title" length must be at least ${Book.TITLE_MIN_LENGTH}`);
         }
 
         return ok({});
@@ -49,7 +51,7 @@ export class Book {
 
     static validateAuthors(authors: string[]) {
         if (!authors?.length) {
-            return BookError.InvalidAuthors.create('authors must be an non-empty array');
+            return new BookError.InvalidAuthors('authors must be an non-empty array');
         }
 
         // It seems it is a bit tricky to receive exectly our custom BookEntityError.InvalidAuthor error.
@@ -60,7 +62,7 @@ export class Book {
                 return ok(name);
             }
 
-            return err(BookError.InvalidAuthor.create('"author name" must be a non-empty string', { index }));
+            return err(new BookError.InvalidAuthor('"author name" must be a non-empty string', { index }));
         }));
 
         if (validNames.isErr()) return validNames.error;
