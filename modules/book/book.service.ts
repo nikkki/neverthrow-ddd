@@ -17,7 +17,7 @@ export class BooksService {
 
         await this.booksRepo.createOne(bookOrErr._unsafeUnwrap());
 
-        return await bookOrErr.map(book => ({
+        return bookOrErr.map(book => ({
             id: book.rawProps().id,
             title: book.rawProps().title,
             authors: book.rawProps().authors,
